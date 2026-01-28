@@ -52,7 +52,7 @@ const upload = multer({
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/epic-portfolio')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://mohammedaminechaieb_db_user:badwolf123@cluster0.z2cv2ej.mongodb.net/')
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Error:', err));
 
