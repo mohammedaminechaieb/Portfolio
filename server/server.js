@@ -126,7 +126,7 @@ app.post('/api/projects', authMiddleware, upload.single('image'), async (req, re
     const projectData = {
       ...req.body,
       technologies: JSON.parse(req.body.technologies || '[]'),
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}` : null
     };
     const project = new Project(projectData);
     await project.save();
@@ -143,7 +143,7 @@ app.put('/api/projects/:id', authMiddleware, upload.single('image'), async (req,
       technologies: req.body.technologies ? JSON.parse(req.body.technologies) : undefined
     };
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     const project = await Project.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(project);
@@ -220,7 +220,7 @@ app.post('/api/designs', authMiddleware, upload.single('image'), async (req, res
     const designData = {
       ...req.body,
       tools: JSON.parse(req.body.tools || '[]'),
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}` : null
     };
     const design = new Design(designData);
     await design.save();
@@ -237,7 +237,7 @@ app.put('/api/designs/:id', authMiddleware, upload.single('image'), async (req, 
       tools: req.body.tools ? JSON.parse(req.body.tools) : undefined
     };
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     const design = await Design.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(design);
@@ -272,7 +272,7 @@ app.post('/api/events', authMiddleware, upload.single('image'), async (req, res)
   try {
     const eventData = {
       ...req.body,
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}` : null
     };
     const event = new Event(eventData);
     await event.save();
@@ -286,7 +286,7 @@ app.put('/api/events/:id', authMiddleware, upload.single('image'), async (req, r
   try {
     const updateData = { ...req.body };
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     const event = await Event.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(event);
@@ -321,7 +321,7 @@ app.post('/api/certificates', authMiddleware, upload.single('image'), async (req
   try {
     const certData = {
       ...req.body,
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}` : null
     };
     const certificate = new Certificate(certData);
     await certificate.save();
@@ -335,7 +335,7 @@ app.put('/api/certificates/:id', authMiddleware, upload.single('image'), async (
   try {
     const updateData = { ...req.body };
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     const certificate = await Certificate.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(certificate);
@@ -388,7 +388,7 @@ app.put('/api/clubs/:id', authMiddleware, upload.single('image'), async (req, re
       achievements: req.body.achievements ? JSON.parse(req.body.achievements) : undefined
     };
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     const club = await Club.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(club);
@@ -476,7 +476,7 @@ app.put('/api/settings', authMiddleware, upload.single('avatar'), async (req, re
       theme: req.body.theme ? JSON.parse(req.body.theme) : undefined
     };
     if (req.file) {
-      updateData.avatar = `/uploads/${req.file.filename}`;
+      updateData.avatar = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
     }
     let settings = await Settings.findOne();
     if (!settings) {
