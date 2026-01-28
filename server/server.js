@@ -468,23 +468,10 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.get('/api/settings', async (req, res) => {
-  try {
-    let settings = await Settings.findOne();
-
-    // If no settings in DB, create a default one
-    if (!settings) {
-      settings = new Settings();
-    }
-
-    // Hardcode avatar URL directly
-    settings.avatar = `${process.env.BACKEND_URL || 'https://portfolio-yxcp.onrender.com'}/uploads/avatar.png`;
-
-    res.json(settings);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+app.put('/api/settings', authMiddleware, upload.single('avatar'), async (req, res) => { 
+  try { 
+    const updateData = { 
+      ...req.body, socialLinks: req.body.socialLinks ? JSON.parse(req.body.socialLinks) : undefined, theme: req.body.theme ? JSON.parse(req.body.theme) : undefined }; if (req.file) { updateData.avatar = ${process.env.BACKEND_URL}/uploads/${req.file.filename}; } let settings = await Settings.findOne(); if (!settings) { settings = new Settings(updateData); } else { Object.assign(settings, updateData); } await settings.save(); res.json(settings); } catch (error) { res.status(500).json({ error: error.message }); } });
 
 // ============================================
 // UPLOAD ROUTE (Generic)
