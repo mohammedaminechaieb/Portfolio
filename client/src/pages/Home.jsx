@@ -107,9 +107,12 @@ const Home = () => {
           >
             {settings?.avatar ? (
               <img
-                src={settings.avatar}
+                src={settings.avatar.startsWith('http') 
+                  ? settings.avatar 
+                  : `https://portfolio-yxcp.onrender.com/uploads/${settings.avatar.replace(/^\//, '')}`
+                }
                 alt="Avatar"
-                className="w-32 h-32 rounded-full border-4 border-primary-500 shadow-2xl shadow-primary-500/50"
+                className="w-32 h-32 rounded-full border-4 border-primary-500 shadow-2xl shadow-primary-500/50 object-cover object-center"
               />
             ) : (
               <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-4xl font-bold">
