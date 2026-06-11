@@ -76,8 +76,8 @@ const Home = () => {
         className="absolute w-96 h-96 rounded-full blur-3xl opacity-20"
         style={{
           background: 'radial-gradient(circle, #ec4899 0%, transparent 70%)',
-          right: window.innerWidth - mousePosition.x - 192,
-          bottom: window.innerHeight - mousePosition.y - 192,
+          right: (typeof window !== 'undefined' ? window.innerWidth : 1920) - mousePosition.x - 192,
+          bottom: (typeof window !== 'undefined' ? window.innerHeight : 1080) - mousePosition.y - 192,
         }}
         animate={{
           scale: [1.2, 1, 1.2],

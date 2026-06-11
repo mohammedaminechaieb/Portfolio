@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { FaGithub, FaExternalLinkAlt, FaStar } from 'react-icons/fa';
 import { projectsAPI } from '../utils/api';
+import ProjectCard from '../components/ProjectCard';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -23,31 +23,17 @@ const Projects = () => {
     }
   };
 
-  const filteredProjects = filter === 'all' 
-    ? projects 
-    : filter === 'featured'
-    ? projects.filter(p => p.featured)
-    : projects;
+  const filteredProjects =
+    filter === 'featured' ? projects.filter((p) => p.featured) : projects;
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   if (loading) {
@@ -114,79 +100,7 @@ const Projects = () => {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {filteredProjects.map((project) => (
-              <motion.div
-                key={project._id}
-                variants={itemVariants}
-                whileHover={{ y: -10 }}
-                className="glow-card rounded-2xl p-6 relative overflow-hidden group"
-              >
-                {/* Featured Badge */}
-                {project.featured && (
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                    <FaStar className="text-xs" />
-                    Featured
-                  </div>
-                )}
-
-                {/* Image */}
-                {project.image && (
-                  <div className="mb-4 rounded-xl overflow-hidden">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                )}
-
-                {/* Title */}
-                <h3 className="text-2xl font-bold mb-2 text-white">
-                  {project.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-gray-400 mb-4 line-clamp-3">
-                  {project.description}
-                </p>
-
-                {/* Technologies */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies?.map((tech, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-medium"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Links */}
-                <div className="flex gap-3">
-                  {project.githubUrl && (
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-sm"
-                    >
-                      <FaGithub />
-                      Code
-                    </a>
-                  )}
-                  {project.liveUrl && (
-                    <a
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-accent-500 hover:opacity-90 transition-all text-sm"
-                    >
-                      <FaExternalLinkAlt />
-                      Live Demo
-                    </a>
-                  )}
-                </div>
-              </motion.div>
+              <ProjectCard key={project._id} project={project} variants={itemVariants} />
             ))}
           </motion.div>
         )}

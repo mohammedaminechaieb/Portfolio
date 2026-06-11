@@ -98,7 +98,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, username: user.username },
-      process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -371,7 +371,7 @@ app.post('/api/clubs', authMiddleware, upload.single('image'), async (req, res) 
     const clubData = {
       ...req.body,
       achievements: JSON.parse(req.body.achievements || '[]'),
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? `${process.env.BACKEND_URL}/uploads/${req.file.filename}` : null
     };
     const club = new Club(clubData);
     await club.save();
@@ -468,12 +468,34 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.put('/api/settings', authMiddleware, upload.single('avatar'), async (req, res) => { 
-  try { 
-    const updateData = { 
-      ...req.body, socialLinks: req.body.socialLinks ? JSON.parse(req.body.socialLinks) : undefined, theme: req.body.theme ? JSON.parse(req.body.theme) : undefined }; if (req.file) { updateData.avatar = ${process.env.BACKEND_URL}/uploads/${req.file.filename}; } let settings = await Settings.findOne(); if (!settings) { settings = new Settings(updateData); } else { Object.assign(settings, updateData); } await settings.save(); res.json(settings); } catch (error) { res.status(500).json({ error: error.message }); } });
+app.put('/api/settings', authMiddleware, upload.single('avatar'), async (req, res) => {
+  try {
+    const updateData = {
+      ...req.body,
+      socialLinks: req.body.socialLinks ? JSON.parse(req.body.socialLinks) : undefined,
+      theme: req.body.theme ? JSON.parse(req.body.theme) : undefined
+    };
 
-// ============================================
+    if (req.file) {
+      updateData.avatar = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
+    }
+
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = new Settings(updateData);
+    } else {
+      Object.assign(settings, updateData);
+    }
+
+    await settings.save();
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==
+// ==========================================
 // UPLOAD ROUTE (Generic)
 // ============================================
 
