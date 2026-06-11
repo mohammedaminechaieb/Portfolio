@@ -18,7 +18,7 @@ const DataSection = ({ title, data, onAdd, onEdit, onDelete, showForm, setShowFo
   <div className="space-y-6">
     <div className="flex justify-between items-center">
       <h2 className="text-2xl font-bold">{title}</h2>
-      <button onClick={onAdd} className="btn-primary flex items-center gap-2">
+      <button onClick={onAdd} className="btn-primary flex items-center gap-2 px-6 py-2">
         <FaPlus /> Add New
       </button>
     </div>
@@ -26,14 +26,14 @@ const DataSection = ({ title, data, onAdd, onEdit, onDelete, showForm, setShowFo
     {showForm && (
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="glow-card rounded-lg p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">{formData._id ? 'Edit' : 'Add New'} {title.slice(0, -1)}</h3>
+          <h3 className="text-xl font-bold">{formData._id ? 'Edit' : 'Add New'} {title.replace(/s$/, '')}</h3>
           <button onClick={() => setShowForm(false)}><FaTimes className="text-xl hover:text-red-400" /></button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((field) => (
-            <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
+            <div key={field.name} className={field.type === 'textarea' || field.type === 'checkbox' ? 'md:col-span-2' : ''}>
               <label className="block text-sm font-medium mb-2">
-                {field.label}{field.required && <span className="text-red-400">*</span>}
+                {field.label}{field.required && <span className="text-red-400 ml-1">*</span>}
               </label>
               {field.type === 'textarea' ? (
                 <textarea
@@ -41,19 +41,24 @@ const DataSection = ({ title, data, onAdd, onEdit, onDelete, showForm, setShowFo
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:border-primary-500 outline-none"
                   rows="4" required={field.required}
+                  placeholder={field.placeholder || ''}
                 />
               ) : field.type === 'file' ? (
                 <input type="file"
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.files[0] })}
                   accept={field.accept}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20"
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-gray-300"
                 />
               ) : field.type === 'checkbox' ? (
-                <input type="checkbox"
-                  checked={formData[field.name] || false}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.checked })}
-                  className="w-5 h-5"
-                />
+                <div className="flex items-center gap-3">
+                  <input type="checkbox"
+                    checked={formData[field.name] || false}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.checked })}
+                    className="w-5 h-5 accent-primary-500"
+                    id={`chk-${field.name}`}
+                  />
+                  <label htmlFor={`chk-${field.name}`} className="text-gray-300 text-sm">{field.label}</label>
+                </div>
               ) : field.type === 'select' ? (
                 <select
                   value={formData[field.name] || ''}
@@ -78,7 +83,7 @@ const DataSection = ({ title, data, onAdd, onEdit, onDelete, showForm, setShowFo
           ))}
         </div>
         <div className="flex gap-3 mt-6">
-          <button onClick={onSubmit} disabled={loading} className="btn-primary flex items-center gap-2">
+          <button onClick={onSubmit} disabled={loading} className="btn-primary flex items-center gap-2 px-6 py-2">
             <FaSave />{loading ? 'Saving...' : 'Save'}
           </button>
           <button onClick={() => setShowForm(false)} className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20">Cancel</button>
@@ -86,34 +91,43 @@ const DataSection = ({ title, data, onAdd, onEdit, onDelete, showForm, setShowFo
       </motion.div>
     )}
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {data.map((item) => (
-        <div key={item._id} className="glow-card rounded-lg p-4">
-          {item.image && (
-            <img src={item.image} alt={item.title || item.name} className="w-full h-32 object-cover rounded-lg mb-3" />
-          )}
-          <h3 className="font-bold text-lg mb-1">{item.title || item.name}</h3>
-          {item.issuer && <p className="text-sm text-accent-400 mb-1">{item.issuer}</p>}
-          {item.category && <p className="text-xs text-gray-500 mb-1">{item.category}</p>}
-          {item.role && <p className="text-sm text-primary-400 mb-1">{item.role}</p>}
-          {item.level !== undefined && (
-            <p className="text-xs text-gray-400 mb-1">Level: {item.level}%</p>
-          )}
-          <p className="text-sm text-gray-400 mb-3 line-clamp-2">{item.description}</p>
-          <div className="flex gap-2">
-            <button onClick={() => onEdit(item)} className="flex-1 px-3 py-2 rounded bg-primary-500/20 text-primary-300 hover:bg-primary-500/30 flex items-center justify-center gap-2">
-              <FaEdit /> Edit
-            </button>
-            <button onClick={() => onDelete(item._id)} className="flex-1 px-3 py-2 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 flex items-center justify-center gap-2">
-              <FaTrash /> Delete
-            </button>
+    {data.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.map((item) => (
+          <div key={item._id} className="glow-card rounded-lg p-4 flex flex-col">
+            {item.image && (
+              <img src={item.image} alt={item.title || item.name} className="w-full h-32 object-cover rounded-lg mb-3" />
+            )}
+            <h3 className="font-bold text-lg mb-1">{item.title || item.name}</h3>
+            {item.issuer && <p className="text-sm text-accent-400 mb-1">{item.issuer}</p>}
+            {item.category && <p className="text-xs text-gray-500 mb-1">{item.category}</p>}
+            {item.role && <p className="text-sm text-primary-400 mb-1">{item.role}</p>}
+            {item.level !== undefined && (
+              <p className="text-xs text-gray-400 mb-1">Level: {item.level}%</p>
+            )}
+            {item.description && (
+              <p className="text-sm text-gray-400 mb-3 line-clamp-2 flex-1">{item.description}</p>
+            )}
+            <div className="flex gap-2 mt-auto">
+              <button onClick={() => onEdit(item)} className="flex-1 px-3 py-2 rounded bg-primary-500/20 text-primary-300 hover:bg-primary-500/30 flex items-center justify-center gap-2 text-sm">
+                <FaEdit /> Edit
+              </button>
+              <button onClick={() => onDelete(item._id)} className="flex-1 px-3 py-2 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 flex items-center justify-center gap-2 text-sm">
+                <FaTrash /> Delete
+              </button>
+            </div>
           </div>
+        ))}
+      </div>
+    ) : (
+      !showForm && (
+        <div className="text-center py-16 glow-card rounded-2xl">
+          <p className="text-gray-400 text-lg mb-4">No {title.toLowerCase()} yet.</p>
+          <button onClick={onAdd} className="btn-primary flex items-center gap-2 mx-auto px-6 py-2">
+            <FaPlus /> Add your first {title.replace(/s$/, '').toLowerCase()}
+          </button>
         </div>
-      ))}
-    </div>
-
-    {data.length === 0 && !showForm && (
-      <p className="text-center text-gray-400 py-12">No {title.toLowerCase()} yet. Click "Add New" to get started!</p>
+      )
     )}
   </div>
 );
@@ -157,6 +171,7 @@ const SettingsPanel = ({ settings, onSave, loading }) => {
     formData.append('theme', JSON.stringify({
       primaryColor: form.primaryColor, accentColor: form.accentColor,
     }));
+    if (form.avatar) formData.append('avatar', form.avatar);
     onSave(formData);
   };
 
@@ -202,7 +217,7 @@ const SettingsPanel = ({ settings, onSave, loading }) => {
         <h3 className="text-lg font-semibold mb-4 text-primary-400">Avatar</h3>
         <input type="file" accept="image/*"
           onChange={e => setForm({ ...form, avatar: e.target.files[0] })}
-          className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20" />
+          className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-gray-300" />
       </section>
 
       <section>
@@ -225,7 +240,7 @@ const SettingsPanel = ({ settings, onSave, loading }) => {
         </div>
       </section>
 
-      <button onClick={handleSubmit} disabled={loading} className="btn-primary flex items-center gap-2">
+      <button onClick={handleSubmit} disabled={loading} className="btn-primary flex items-center gap-2 px-8 py-3">
         <FaSave />{loading ? 'Saving...' : 'Save Settings'}
       </button>
     </div>
@@ -254,23 +269,53 @@ const Admin = () => {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    if (!isAuthenticated) { navigate('/login'); }
-    else { fetchStats(); fetchAllData(); }
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else {
+      fetchStats();
+      fetchAllData();
+    }
   }, [isAuthenticated, navigate]);
 
   const fetchStats = async () => {
-    try { const r = await statsAPI.get(); setStats(r.data); } catch (e) { console.error(e); }
+    try {
+      const r = await statsAPI.get();
+      setStats(r.data);
+    } catch (e) {
+      console.error('Stats error:', e);
+    }
   };
 
+  // Fetch each resource independently so one failure doesn't block the others
   const fetchAllData = async () => {
+    const safe = (promise) => promise.catch((e) => { console.error(e); return { data: [] }; });
+
+    const [pR, sR, dR, eR, cR, clR, stR] = await Promise.all([
+      safe(projectsAPI.getAll()),
+      safe(skillsAPI.getAll()),
+      safe(designsAPI.getAll()),
+      safe(eventsAPI.getAll()),
+      safe(certificatesAPI.getAll()),
+      safe(clubsAPI.getAll()),
+      safe(settingsAPI.get()),
+    ]);
+
+    setProjects(pR.data || []);
+    setSkills(sR.data || []);
+    setDesigns(dR.data || []);
+    setEvents(eR.data || []);
+    setCertificates(cR.data || []);
+    setClubs(clR.data || []);
+    setSettings(stR.data || null);
+
+    // Messages fetched separately — requires auth, failure shouldn't affect other tabs
     try {
-      const [pR, sR, dR, eR, cR, clR, coR, stR] = await Promise.all([
-        projectsAPI.getAll(), skillsAPI.getAll(), designsAPI.getAll(), eventsAPI.getAll(),
-        certificatesAPI.getAll(), clubsAPI.getAll(), contactAPI.getAll(), settingsAPI.get(),
-      ]);
-      setProjects(pR.data); setSkills(sR.data); setDesigns(dR.data); setEvents(eR.data);
-      setCertificates(cR.data); setClubs(clR.data); setContacts(coR.data); setSettings(stR.data);
-    } catch (e) { console.error(e); }
+      const coR = await contactAPI.getAll();
+      setContacts(coR.data || []);
+    } catch (e) {
+      console.error('Contacts fetch error:', e);
+      setContacts([]);
+    }
   };
 
   const tabs = [
@@ -286,48 +331,86 @@ const Admin = () => {
   ];
 
   const handleAdd = () => { setEditingItem(null); setFormData({}); setShowForm(true); };
-  const handleEdit = (item) => { setEditingItem(item); setFormData({ ...item }); setShowForm(true); };
+  const handleEdit = (item) => {
+    // For array fields, join them back to comma-separated strings for the form
+    const editData = { ...item };
+    ['technologies', 'tools', 'achievements'].forEach(key => {
+      if (Array.isArray(editData[key])) {
+        editData[key] = editData[key].join(', ');
+      }
+    });
+    setEditingItem(item);
+    setFormData(editData);
+    setShowForm(true);
+  };
 
   const handleDelete = async (type, id) => {
-    if (!confirm('Are you sure?')) return;
+    if (!window.confirm('Are you sure you want to delete this?')) return;
     try {
       setLoading(true);
-      const apis = { projects: projectsAPI, skills: skillsAPI, designs: designsAPI, events: eventsAPI, certificates: certificatesAPI, clubs: clubsAPI, messages: contactAPI };
+      const apis = {
+        projects: projectsAPI, skills: skillsAPI, designs: designsAPI,
+        events: eventsAPI, certificates: certificatesAPI, clubs: clubsAPI,
+        messages: contactAPI,
+      };
       await apis[type].delete(id);
       toast.success('Deleted successfully!');
-      fetchAllData(); fetchStats();
-    } catch { toast.error('Error deleting'); } finally { setLoading(false); }
+      fetchAllData();
+      fetchStats();
+    } catch {
+      toast.error('Error deleting item');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (type) => {
     try {
       setLoading(true);
       const fd = new FormData();
-      // Fields that the form collects as comma-separated strings but the API expects as JSON arrays
       const arrayFields = ['technologies', 'tools', 'achievements'];
+
       Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== undefined) {
-          if (formData[key] instanceof File) {
-            fd.append(key, formData[key]);
-          } else if (arrayFields.includes(key)) {
-            // Split comma-separated string into an array, trim whitespace
-            const arr = typeof formData[key] === 'string'
-              ? formData[key].split(',').map(s => s.trim()).filter(Boolean)
-              : formData[key];
-            fd.append(key, JSON.stringify(arr));
-          } else if (Array.isArray(formData[key])) {
-            fd.append(key, JSON.stringify(formData[key]));
-          } else {
-            fd.append(key, formData[key]);
-          }
+        const val = formData[key];
+        if (val === null || val === undefined || val === '') return;
+        if (val instanceof File) {
+          fd.append(key, val);
+        } else if (arrayFields.includes(key)) {
+          const arr = typeof val === 'string'
+            ? val.split(',').map(s => s.trim()).filter(Boolean)
+            : val;
+          fd.append(key, JSON.stringify(arr));
+        } else if (Array.isArray(val)) {
+          fd.append(key, JSON.stringify(val));
+        } else {
+          fd.append(key, val);
         }
       });
-      const apis = { projects: projectsAPI, skills: skillsAPI, designs: designsAPI, events: eventsAPI, certificates: certificatesAPI, clubs: clubsAPI };
-      if (editingItem) { await apis[type].update(editingItem._id, fd); toast.success('Updated!'); }
-      else { await apis[type].create(fd); toast.success('Created!'); }
-      setShowForm(false); setFormData({}); setEditingItem(null);
-      fetchAllData(); fetchStats();
-    } catch { toast.error('Error saving'); } finally { setLoading(false); }
+
+      const apis = {
+        projects: projectsAPI, skills: skillsAPI, designs: designsAPI,
+        events: eventsAPI, certificates: certificatesAPI, clubs: clubsAPI,
+      };
+
+      if (editingItem) {
+        await apis[type].update(editingItem._id, fd);
+        toast.success('Updated successfully!');
+      } else {
+        await apis[type].create(fd);
+        toast.success('Created successfully!');
+      }
+
+      setShowForm(false);
+      setFormData({});
+      setEditingItem(null);
+      fetchAllData();
+      fetchStats();
+    } catch (err) {
+      console.error('Submit error:', err);
+      toast.error('Error saving. Check all required fields.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveSettings = async (fd) => {
@@ -336,65 +419,72 @@ const Admin = () => {
       await settingsAPI.update(fd);
       toast.success('Settings saved!');
       fetchAllData();
-    } catch { toast.error('Error saving settings'); } finally { setLoading(false); }
+    } catch {
+      toast.error('Error saving settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Tab-specific field definitions
   const tabFields = {
     projects: [
-      { name: 'title',        label: 'Title',                           type: 'text',     required: true },
-      { name: 'description',  label: 'Description',                     type: 'textarea', required: true },
-      { name: 'technologies', label: 'Technologies (comma separated)',   type: 'text',     placeholder: 'React, Node.js, MongoDB' },
-      { name: 'liveUrl',      label: 'Live URL',                        type: 'url' },
-      { name: 'githubUrl',    label: 'GitHub URL',                      type: 'url' },
-      { name: 'image',        label: 'Image',                           type: 'file',     accept: 'image/*' },
-      { name: 'featured',     label: 'Featured',                        type: 'checkbox' },
+      { name: 'title',        label: 'Title',                          type: 'text',     required: true },
+      { name: 'description',  label: 'Description',                    type: 'textarea', required: true },
+      { name: 'technologies', label: 'Technologies (comma separated)', type: 'text',     placeholder: 'React, Node.js, MongoDB' },
+      { name: 'liveUrl',      label: 'Live URL',                       type: 'url' },
+      { name: 'githubUrl',    label: 'GitHub URL',                     type: 'url' },
+      { name: 'image',        label: 'Image',                          type: 'file',     accept: 'image/*' },
+      { name: 'featured',     label: 'Mark as Featured',               type: 'checkbox' },
     ],
     skills: [
-      { name: 'name',     label: 'Skill Name',                      type: 'text',   required: true },
-      { name: 'category', label: 'Category (Frontend, Backend...)', type: 'text',   required: true },
-      { name: 'level',    label: 'Level (0-100)',                   type: 'number', min: 0, max: 100 },
-      { name: 'icon',     label: 'Icon URL',                        type: 'url' },
+      { name: 'name',     label: 'Skill Name',                       type: 'text',   required: true },
+      { name: 'category', label: 'Category (e.g. Frontend, Backend)', type: 'text',  required: true },
+      { name: 'level',    label: 'Level (0–100)',                    type: 'number', min: 0, max: 100 },
+      { name: 'icon',     label: 'Icon URL',                         type: 'url' },
     ],
     designs: [
-      { name: 'title',       label: 'Title',                      type: 'text',     required: true },
-      { name: 'description', label: 'Description',                type: 'textarea' },
-      { name: 'category',    label: 'Category (UI/UX, Poster...)', type: 'text',   required: true },
-      { name: 'tools',       label: 'Tools (comma separated)',     type: 'text',   placeholder: 'Figma, Photoshop, Canva' },
-      { name: 'image',       label: 'Image',                      type: 'file',    accept: 'image/*', required: true },
+      { name: 'title',       label: 'Title',                        type: 'text',     required: true },
+      { name: 'description', label: 'Description',                  type: 'textarea' },
+      { name: 'category',    label: 'Category (UI/UX, Poster, Logo...)', type: 'text', required: true },
+      { name: 'tools',       label: 'Tools (comma separated)',      type: 'text',     placeholder: 'Figma, Photoshop, Canva' },
+      { name: 'image',       label: 'Image',                        type: 'file',     accept: 'image/*', required: true },
     ],
     events: [
-      { name: 'title',       label: 'Title',                         type: 'text',     required: true },
-      { name: 'description', label: 'Description',                   type: 'textarea' },
-      { name: 'date',        label: 'Date',                          type: 'date' },
-      { name: 'type',        label: 'Type',                          type: 'select',
+      { name: 'title',       label: 'Event Title',                  type: 'text',     required: true },
+      { name: 'description', label: 'Description',                  type: 'textarea' },
+      { name: 'date',        label: 'Date',                         type: 'date' },
+      { name: 'type',        label: 'Type',                         type: 'select',
         options: ['Hackathon', 'Competition', 'Workshop', 'Forum', 'Conference', 'Other'] },
-      { name: 'achievement', label: 'Achievement / Role',            type: 'text',     placeholder: 'e.g. Ranked 3rd, Organizer' },
-      { name: 'image',       label: 'Image',                         type: 'file',     accept: 'image/*' },
+      { name: 'achievement', label: 'Achievement / Role',           type: 'text',     placeholder: 'e.g. Ranked 3rd, Organizer' },
+      { name: 'image',       label: 'Image',                        type: 'file',     accept: 'image/*' },
     ],
     certificates: [
-      { name: 'title',         label: 'Certificate Title',    type: 'text',   required: true },
-      { name: 'issuer',        label: 'Issuer',               type: 'text',   required: true },
-      { name: 'date',          label: 'Issue Date',           type: 'date' },
-      { name: 'category',      label: 'Category',             type: 'select',
+      { name: 'title',         label: 'Certificate Title', type: 'text',   required: true },
+      { name: 'issuer',        label: 'Issuer',            type: 'text',   required: true },
+      { name: 'date',          label: 'Issue Date',        type: 'date' },
+      { name: 'category',      label: 'Category',          type: 'select',
         options: ['AI/ML', 'Cybersecurity', 'Programming', 'Data Science', 'Web', 'Language', 'Other'] },
-      { name: 'credentialUrl', label: 'Credential URL',       type: 'url' },
-      { name: 'image',         label: 'Certificate Image',    type: 'file',   accept: 'image/*' },
+      { name: 'credentialUrl', label: 'Credential URL',    type: 'url' },
+      { name: 'image',         label: 'Certificate Image', type: 'file',   accept: 'image/*' },
     ],
     clubs: [
-      { name: 'name',         label: 'Club / Org Name',         type: 'text',     required: true },
-      { name: 'role',         label: 'Your Role',               type: 'text',     required: true },
-      { name: 'period',       label: 'Period (e.g. Sep 2024 – Present)', type: 'text' },
-      { name: 'description',  label: 'Description',             type: 'textarea' },
-      { name: 'achievements', label: 'Achievements (comma separated)', type: 'text', placeholder: 'Organized X event, Won Y...' },
-      { name: 'image',        label: 'Logo / Image',            type: 'file',     accept: 'image/*' },
+      { name: 'name',         label: 'Club / Org Name',                    type: 'text',     required: true },
+      { name: 'role',         label: 'Your Role',                          type: 'text',     required: true },
+      { name: 'period',       label: 'Period (e.g. Sep 2024 – Present)',   type: 'text' },
+      { name: 'description',  label: 'Description',                        type: 'textarea' },
+      { name: 'achievements', label: 'Achievements (comma separated)',     type: 'text',     placeholder: 'Organized X event, Won Y award...' },
+      { name: 'image',        label: 'Logo / Image',                       type: 'file',     accept: 'image/*' },
     ],
   };
 
   return (
     <div className="min-h-screen py-20 px-6">
       <div className="max-w-7xl mx-auto">
-        <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-display font-bold gradient-text mb-12">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-5xl font-display font-bold gradient-text mb-12"
+        >
           Admin Dashboard
         </motion.h1>
 
@@ -403,11 +493,20 @@ const Admin = () => {
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setShowForm(false); setFormData({}); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${activeTab === tab.id ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setShowForm(false); setFormData({}); setEditingItem(null); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
                 <Icon />
                 <span>{tab.label}</span>
-                {tab.count !== undefined && <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{tab.count}</span>}
+                {tab.count !== undefined && (
+                  <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{tab.count}</span>
+                )}
               </button>
             );
           })}
@@ -417,19 +516,24 @@ const Admin = () => {
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { label: 'Projects',     count: stats.projects,     icon: FaProjectDiagram, color: 'from-blue-500 to-cyan-500' },
-              { label: 'Skills',       count: stats.skills,       icon: FaBrain,          color: 'from-purple-500 to-pink-500' },
-              { label: 'Designs',      count: stats.designs,      icon: FaPalette,        color: 'from-green-500 to-teal-500' },
-              { label: 'Events',       count: stats.events,       icon: FaTrophy,         color: 'from-yellow-500 to-orange-500' },
-              { label: 'Certificates', count: stats.certificates, icon: FaCertificate,    color: 'from-red-500 to-pink-500' },
-              { label: 'Clubs',        count: stats.clubs,        icon: FaUsers,          color: 'from-indigo-500 to-purple-500' },
-              { label: 'Messages',     count: stats.messages,     icon: FaEnvelope,       color: 'from-pink-500 to-rose-500' },
+              { label: 'Projects',     count: stats.projects,     icon: FaProjectDiagram, color: 'from-blue-500 to-cyan-500',     tab: 'projects' },
+              { label: 'Skills',       count: stats.skills,       icon: FaBrain,           color: 'from-purple-500 to-pink-500',  tab: 'skills' },
+              { label: 'Designs',      count: stats.designs,      icon: FaPalette,         color: 'from-green-500 to-teal-500',   tab: 'designs' },
+              { label: 'Events',       count: stats.events,       icon: FaTrophy,          color: 'from-yellow-500 to-orange-500', tab: 'events' },
+              { label: 'Certificates', count: stats.certificates, icon: FaCertificate,     color: 'from-red-500 to-pink-500',     tab: 'certificates' },
+              { label: 'Clubs',        count: stats.clubs,        icon: FaUsers,           color: 'from-indigo-500 to-purple-500', tab: 'clubs' },
+              { label: 'Messages',     count: stats.messages,     icon: FaEnvelope,        color: 'from-pink-500 to-rose-500',    tab: 'messages' },
             ].map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: index * 0.1 }}
-                  className={`glow-card rounded-2xl p-6 bg-gradient-to-br ${stat.color} cursor-pointer`}
-                  onClick={() => setActiveTab(stat.label.toLowerCase())}>
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`glow-card rounded-2xl p-6 bg-gradient-to-br ${stat.color} cursor-pointer hover:scale-105 transition-transform`}
+                  onClick={() => setActiveTab(stat.tab)}
+                >
                   <Icon className="text-4xl mb-3 text-white/80" />
                   <h3 className="text-3xl font-bold text-white mb-1">{stat.count || 0}</h3>
                   <p className="text-white/80">{stat.label}</p>
@@ -492,18 +596,26 @@ const Admin = () => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-4">Contact Messages</h2>
             {contacts.length === 0 ? (
-              <p className="text-gray-400">No messages yet</p>
+              <div className="text-center py-16 glow-card rounded-2xl">
+                <FaEnvelope className="text-5xl text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 text-lg">No messages yet</p>
+              </div>
             ) : (
               contacts.map((contact) => (
-                <div key={contact._id} className={`glow-card rounded-lg p-6 ${contact.read ? 'opacity-60' : ''}`}>
+                <div key={contact._id} className={`glow-card rounded-lg p-6 ${contact.read ? 'opacity-60' : 'border-l-4 border-primary-500'}`}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="text-xl font-bold">{contact.name}</h3>
                       <p className="text-sm text-gray-400">{contact.email}</p>
                     </div>
-                    <button onClick={() => handleDelete('messages', contact._id)} className="text-red-400 hover:text-red-300"><FaTrash /></button>
+                    <button
+                      onClick={() => handleDelete('messages', contact._id)}
+                      className="text-red-400 hover:text-red-300 p-2"
+                    >
+                      <FaTrash />
+                    </button>
                   </div>
-                  {contact.subject && <p className="font-semibold mb-2">{contact.subject}</p>}
+                  {contact.subject && <p className="font-semibold mb-2 text-primary-300">{contact.subject}</p>}
                   <p className="text-gray-300">{contact.message}</p>
                   <p className="text-xs text-gray-500 mt-3">{new Date(contact.createdAt).toLocaleString()}</p>
                 </div>
